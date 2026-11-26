@@ -14,6 +14,11 @@
       "usuario": "atendimento",
       "senha": "123",
       "tipo": "atendimento"
+    },
+    {
+      "usuario": "Felipe",
+      "senha": "tarzan",
+      "tipo": "medico"
     }
   ],
   "pacientes": [
@@ -437,6 +442,15 @@
       "medicacao": "Buscopan",
       "obs": "passando muito mal com dor no peito",
       "createdAt": "2026-08-06T15:21:20.807Z"
+    }
+  ],
+  "tvChamadas": [
+    {
+      "id": 1795694382772,
+      "paciente": "felipe",
+      "localTipo": "GUICHÊ",
+      "localNumero": "02",
+      "createdAt": "2026-11-26T11:59:42.772Z"
     }
   ]
 }
