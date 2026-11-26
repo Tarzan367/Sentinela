@@ -450,6 +450,22 @@
       "medicacao": "Omeprazol",
       "obs": "tewwetewst",
       "createdAt": "2026-11-26T14:56:38.411Z"
+    },
+    {
+      "id": 1795706219589,
+      "paciente": "teste",
+      "diagnostico": "asdfghjklç",
+      "medicacao": "larotadina",
+      "obs": "",
+      "createdAt": "2026-11-26T15:16:59.589Z"
+    },
+    {
+      "id": 1795706528851,
+      "paciente": "teste",
+      "diagnostico": "refergf",
+      "medicacao": "trotradina",
+      "obs": "tewwetewst",
+      "createdAt": "2026-11-26T15:22:08.851Z"
     }
   ],
   "tvChamadas": [
@@ -459,6 +475,24 @@
       "localTipo": "GUICHÊ",
       "localNumero": "02",
       "createdAt": "2026-11-26T11:59:42.772Z"
+    }
+  ],
+  "estoque": [
+    {
+      "id": 1795705780733,
+      "nome": "larotadina",
+      "quantidade": 19,
+      "unidade": "comprimidos",
+      "categoria": "Protetor Gástico",
+      "createdAt": "2026-11-26T15:09:40.733Z"
+    },
+    {
+      "id": 1795706498016,
+      "nome": "trotradina",
+      "quantidade": 19,
+      "unidade": "cápsulas",
+      "categoria": "Antialérgico",
+      "createdAt": "2026-11-26T15:21:38.016Z"
     }
   ]
 }

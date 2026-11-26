@@ -180,20 +180,13 @@ app.post("/tv/chamada", (req, res) => {
   res.status(201).json({ chamada });
 });
 
-// IMPLEMENTADO: rota com lista fixa de medicações
+// MEDICAÇÕES DISPONÍVEIS NO ESTOQUE
 app.get("/lista-medicacoes", (req, res) => {
-  res.json([
-    "Dipirona",
-    "Paracetamol",
-    "Ibuprofeno",
-    "Amoxicilina",
-    "Azitromicina",
-    "Loratadina",
-    "Omeprazol",
-    "Buscopan",
-    "Dramin",
-    "Soro fisiológico"
-  ]);
+  const db = readDB();
+  const estoque = Array.isArray(db.estoque) ? db.estoque : [];
+  res.json(estoque
+    .filter(medicamento => medicamento.quantidade > 0)
+    .map(({ id, nome, quantidade, unidade }) => ({ id, nome, quantidade, unidade })));
 });
 
 // ESTOQUE
@@ -268,20 +261,36 @@ app.delete("/estoque/:id", (req, res) => {
 // CONSULTA
 app.post("/consulta", (req, res) => {
   const db = readDB();
+  const estoque = Array.isArray(db.estoque) ? db.estoque : [];
+  const medicamento = estoque.find(item =>
+    String(item.id) === String(req.body.medicamentoId)
+  );
+
+  if (!medicamento || medicamento.quantidade <= 0) {
+    return res.status(409).json({
+      erro: "Este medicamento não está disponível no estoque. Atualize a lista e selecione outro."
+    });
+  }
 
   const consulta = {
     id: Date.now(),
     paciente: req.body.paciente,
     diagnostico: req.body.diagnostico,
-    medicacao: req.body.medicacao,
+    medicacao: medicamento.nome,
     obs: req.body.obs,
     createdAt: new Date()
   };
 
+  medicamento.quantidade -= 1;
+  db.estoque = estoque;
   db.consultas.push(consulta);
   writeDB(db);
 
-  res.json(consulta);
+  res.json({
+    consulta,
+    medicamento,
+    estoqueZerado: medicamento.quantidade === 0
+  });
 });
 
 // MEDICAÇÕES
