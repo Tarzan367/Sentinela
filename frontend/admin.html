@@ -37,6 +37,20 @@
  </div>
 
  <script>
+    async function lerResposta(res) {
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        if (res.status === 404) {
+          throw new Error("A rota /usuarios não está publicada. Atualize o deploy do servidor.");
+        }
+        throw new Error(`O servidor respondeu com HTTP ${res.status} em vez de JSON.`);
+      }
+
+      const dados = await res.json();
+      if (!res.ok) throw new Error(dados.erro || "Não foi possível concluir a operação");
+      return dados;
+    }
+
    // 1. Cadastrar usuário ao enviar o formulário
     document.getElementById("formUsuario").addEventListener("submit", function(e) {
         e.preventDefault();
@@ -51,9 +65,7 @@
             body: JSON.stringify({ usuario, senha, tipo })
         })
       .then(async res => {
-        const dados = await res.json();
-        if (!res.ok) throw new Error(dados.erro || "Não foi possível cadastrar o usuário");
-
+        await lerResposta(res);
         alert("Usuário cadastrado com sucesso!");
         document.getElementById("formUsuario").reset();
         await carregarUsuarios();
@@ -69,9 +81,7 @@
 
       try {
         const res = await fetch("/usuarios");
-        if (!res.ok) throw new Error("Não foi possível carregar os usuários");
-
-        const usuarios = await res.json();
+        const usuarios = await lerResposta(res);
         div.innerHTML = "";
 
         usuarios.forEach(u => {

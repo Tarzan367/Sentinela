@@ -10,24 +10,38 @@
   <input id="usuario" placeholder="Usuário">
   <input id="senha" type="password" placeholder="Senha">
   <button onclick="login()">Entrar</button>
+  <p id="loginErro" role="alert" hidden></p>
 </div>
 
 <script>
-function login() {
-  fetch("/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      usuario: usuario.value,
-      senha: senha.value
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if(data.tipo === "triagem") location.href = "triagem.html";
-    if(data.tipo === "medico") location.href = "medico.html";
-    if(data.tipo === "atendimento") location.href = "atendimento.html";
-  });
+async function login() {
+  const mensagem = document.getElementById("loginErro");
+  mensagem.hidden = true;
+  mensagem.textContent = "";
+
+  try {
+    const resposta = await fetch("/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        usuario: document.getElementById("usuario").value,
+        senha: document.getElementById("senha").value
+      })
+    });
+    const dados = await resposta.json();
+    if (!resposta.ok) throw new Error(dados.erro || "Não foi possível fazer login");
+
+    const destinos = {
+      triagem: "triagem.html",
+      medico: "medico.html",
+      atendimento: "atendimento.html"
+    };
+    if (!destinos[dados.tipo]) throw new Error("Setor de usuário inválido");
+    location.href = destinos[dados.tipo];
+  } catch (erro) {
+    mensagem.textContent = erro.message;
+    mensagem.hidden = false;
+  }
 }
 
 // Atalho secreto: Ctrl + Alt + A redirecona para admin.html

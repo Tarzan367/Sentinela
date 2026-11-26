@@ -10,7 +10,7 @@ app.use(cors());
 
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-const DB_FILE = path.join(__dirname, "db.json");
+const DB_FILE = path.join(__dirname, "../backend/db.json");
 
 function readDB() {
   if (!fs.existsSync(DB_FILE)) {
@@ -29,13 +29,44 @@ function writeDB(data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
+// USUARIOS
+app.get("/usuarios", (req, res) => {
+  const db = readDB();
+  res.json(db.usuarios.map(({ usuario, tipo }) => ({ usuario, tipo })));
+});
+
+app.post("/usuarios", (req, res) => {
+  const { usuario, senha, tipo } = req.body || {};
+
+  if (typeof usuario !== "string" || !usuario.trim() ||
+      typeof senha !== "string" || !senha || !tipo) {
+    return res.status(400).json({ erro: "Informe usuário, senha e setor" });
+  }
+
+  const db = readDB();
+  const nomeUsuario = usuario.trim();
+
+  if (db.usuarios.some(u => u.usuario.toLowerCase() === nomeUsuario.toLowerCase())) {
+    return res.status(409).json({ erro: "Este usuário já está cadastrado" });
+  }
+
+  const novoUsuario = { usuario: nomeUsuario, senha, tipo };
+  db.usuarios.push(novoUsuario);
+  writeDB(db);
+
+  res.status(201).json({ usuario: novoUsuario.usuario, tipo: novoUsuario.tipo });
+});
+
 // LOGIN
 app.post("/login", (req, res) => {
   const db = readDB();
+  const body = req.body || {};
+  const usuario = typeof body.usuario === "string" ? body.usuario.trim() : "";
+  const senha = typeof body.senha === "string" ? body.senha : "";
 
   const user = db.usuarios.find(u =>
-    u.usuario === req.body.usuario &&
-    u.senha === req.body.senha
+    u.usuario === usuario &&
+    u.senha === senha
   );
 
   if (!user) {
@@ -44,7 +75,7 @@ app.post("/login", (req, res) => {
     });
   }
 
-  res.json(user);
+  res.json({ usuario: user.usuario, tipo: user.tipo });
 });
 
 // ATENDIMENTO
