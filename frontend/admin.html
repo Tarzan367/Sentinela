@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - cadastro Simples</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    
+<div class="container">
+  <a class="login-back-button" href="index.html">← Voltar ao login</a>
+
+  <button type="button" class="btn-almoxerifado"
+  onclick="window.location.href='almoxerifado.html'"> 📦 Acessar Almoxerifado</button>
+  <h2>👤Cadastrar Usuário</h2>
+   
+  <form id="formUsuario">
+    <input type="text" id="usuario" placeholder="Nome de Usuário 
+    (Login)" required>
+    <input type="password" id="senha" placeholder="Senha" required>
+
+    <select id="tipo" required>
+        <option value="">Selecione</option>
+        <option value="atendimento">atendimento</option>
+        <option value="triagem">Triagem</option>
+        <option value="medico">Médico</option>
+    </select>
+
+    <button type="submit">cadastrar Usuário</button>
+  </form>
+
+  <hr>
+
+  <h3>Usuários Cadastrados</h3>
+  <div id="listaUsuarios"></div>
+ </div>
+
+ <script>
+   // 1. Cadastrar usuário ao enviar o formulário
+    document.getElementById("formUsuario").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+      const usuario = document.getElementById("usuario").value.trim();
+        const senha = document.getElementById("senha").value;
+        const tipo = document.getElementById("tipo").value;
+
+        fetch("/usuarios", {
+            method:"POST",
+        headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usuario, senha, tipo })
+        })
+      .then(async res => {
+        const dados = await res.json();
+        if (!res.ok) throw new Error(dados.erro || "Não foi possível cadastrar o usuário");
+
+        alert("Usuário cadastrado com sucesso!");
+        document.getElementById("formUsuario").reset();
+        await carregarUsuarios();
+      })
+      .catch(erro => {
+        alert("Erro: " + erro.message);
+        });
+    });
+
+    // 2. Carregar e listar os usuraios cadastrados
+    async function carregarUsuarios() {
+      const div = document.getElementById("listaUsuarios");
+
+      try {
+        const res = await fetch("/usuarios");
+        if (!res.ok) throw new Error("Não foi possível carregar os usuários");
+
+        const usuarios = await res.json();
+        div.innerHTML = "";
+
+        usuarios.forEach(u => {
+          const item = document.createElement("div");
+          item.className = "card";
+          item.textContent = `Usuário: ${u.usuario} | Setor: ${u.tipo}`;
+          div.appendChild(item);
+        });
+      } catch (erro) {
+        div.textContent = erro.message;
+      }
+    }
+
+    // Carregar a lista automaticamente ao abrir a página
+    carregarUsuarios();
+ </script>
+ 
+</body>
+</html>
