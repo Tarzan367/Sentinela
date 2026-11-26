@@ -196,6 +196,75 @@ app.get("/lista-medicacoes", (req, res) => {
   ]);
 });
 
+// ESTOQUE
+app.get("/estoque", (req, res) => {
+  const db = readDB();
+  res.json(Array.isArray(db.estoque) ? db.estoque : []);
+});
+
+app.post("/estoque", (req, res) => {
+  const nome = typeof req.body.nome === "string" ? req.body.nome.trim() : "";
+  const { quantidade, unidade, categoria } = req.body;
+
+  if (!nome || !Number.isInteger(quantidade) || quantidade <= 0 ||
+      typeof unidade !== "string" || !unidade.trim() ||
+      typeof categoria !== "string" || !categoria.trim()) {
+    return res.status(400).json({ erro: "Informe o medicamento, uma quantidade válida, a unidade e a categoria" });
+  }
+
+  const db = readDB();
+  db.estoque = Array.isArray(db.estoque) ? db.estoque : [];
+  const medicamento = {
+    id: Date.now(),
+    nome,
+    quantidade,
+    unidade: unidade.trim(),
+    categoria: categoria.trim(),
+    createdAt: new Date()
+  };
+
+  db.estoque.push(medicamento);
+  writeDB(db);
+
+  res.status(201).json({ mensagem: "Medicamento registrado no estoque.", medicamento });
+});
+
+app.patch("/estoque/:id", (req, res) => {
+  const quantidade = req.body.quantidade;
+  if (!Number.isInteger(quantidade)) {
+    return res.status(400).json({ erro: "Informe uma quantidade inteira válida" });
+  }
+
+  const db = readDB();
+  db.estoque = Array.isArray(db.estoque) ? db.estoque : [];
+  const medicamento = db.estoque.find(item => String(item.id) === req.params.id);
+  if (!medicamento) {
+    return res.status(404).json({ erro: "Medicamento não encontrado" });
+  }
+
+  const novaQuantidade = medicamento.quantidade + quantidade;
+  if (novaQuantidade < 0) {
+    return res.status(400).json({ erro: "A quantidade em estoque não pode ficar negativa" });
+  }
+
+  medicamento.quantidade = novaQuantidade;
+  writeDB(db);
+  res.json({ medicamento });
+});
+
+app.delete("/estoque/:id", (req, res) => {
+  const db = readDB();
+  db.estoque = Array.isArray(db.estoque) ? db.estoque : [];
+  const indice = db.estoque.findIndex(item => String(item.id) === req.params.id);
+  if (indice === -1) {
+    return res.status(404).json({ erro: "Medicamento não encontrado" });
+  }
+
+  const [medicamento] = db.estoque.splice(indice, 1);
+  writeDB(db);
+  res.json({ medicamento });
+});
+
 // CONSULTA
 app.post("/consulta", (req, res) => {
   const db = readDB();

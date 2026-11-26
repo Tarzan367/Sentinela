@@ -519,6 +519,10 @@
                 placeholder="Ex: Paracetamol 750mg" autocomplete="off">
             </div>
             <div class="form-group">
+              <label for="emQtd">Quantidade inicial</label>
+              <input type="number" id="emQtd" class="form-control" value="10" min="1">
+            </div>
+            <div class="form-group">
               <label for="emUnidade">Tipo de unidade</label>
               <select id="emUnidade" class="form-control">
                 <option value="comprimidos">Comprimidos</option>
@@ -575,7 +579,7 @@
       <section class="card historico-card">
         <div class="card-header">
           <h2>Últimas entradas registradas</h2>
-          <button class="btn-sm btn-secondary" onclick="carregarHistoricoEntradas()"
+          <button class="btn-sm btn-secondary" onclick="renderizarHistorico()"
             aria-label="Atualizar histórico">🔄️</button>
         </div>
         <div class="card-body historico-lista" id="historicoEntradas">
@@ -639,7 +643,7 @@
           </div>
           <div class="modal-actions">
             <button class="btn-sm btn-secondary" onclick="fecharModal()">Cancelar</button>
-            <button class="btn-sm btn-success" onclick="confirmarEdição()">
+            <button class="btn-sm btn-success" onclick="confirmarEdicao()">
               ✅ Confirmar
             </button>
           </div>
@@ -728,7 +732,7 @@
         = data.filter(m => m.quantidade === 0).length;
       }
 
-      function verififcarAlertas(data) {
+      function verificarAlertas(data) {
         const baixos = data.filter(m => m.quantidade >
         0 && m.quantidade <= 10);
         const zerados = data.filter(m => m.quantidade === 0);
@@ -760,7 +764,7 @@
         'todos' ? 'active' : ''}" onclick="setFiltro('todos',
         this)">Todos</span>`;
         cats.forEach(c => {
-          el.innerHTML += `<span class="chip ${filtroAtivo =
+          el.innerHTML += `<span class="chip ${filtroAtivo ===
           c ? 'active' : ''}" onclick="setFiltro('${c}',
           this)">${c}</span>`;
         });
@@ -768,9 +772,9 @@
 
       function setFiltro(cat, el) {
         filtroAtivo = cat;
-        document.querySelectorAll("chip").forEach(c => 
-         c.classlist.remove("active"));
-        el.classlist.add("active");
+        document.querySelectorAll(".chip").forEach(c =>
+         c.classList.remove("active"));
+        el.classList.add("active");
         filtrarTabela();
       }
 
@@ -784,7 +788,8 @@
           "todos" || m.categoria === filtroAtivo;
           const matchBusc = m.nome.toLowerCase()
           .includes(busca) || (m.categoria || "")
-          toLowerCase().includes(busca);
+          .toLowerCase()
+          .includes(busca);
           return matchCat && matchBusc;
         });
         renderizarTabela(filtrados);
@@ -828,7 +833,7 @@
                           ✏️ Editar
                         </button>
                         <button class="btn-sm btn-danger-sm"
-                        onclick="removeMedicamento(${m.id},
+                        onclick="removerMedicamento(${m.id},
                         '${m.nome.replace(/'/g, "\\'")}')">
                         🗑️
                         </button>
@@ -845,23 +850,22 @@
         const nome = document.getElementById("emNome").value.trim();
         const qtd = parseInt(document.getElementById("emQtd").value);
         const unidade = document.getElementById("emUnidade").value;
-        const categoria = document.getElementById("emCategoria").valuie;
+        const categoria = document.getElementById("emCategoria").value;
 
         if (!nome) { showToast("⚠️ Digite o nome do medicamento.",
           "warning"); return; }
-        if (!qtd || qtd <= 0) { showToast("⚠️ Quantidade inválida.",
+        if (!Number.isInteger(qtd) || qtd <= 0) { showToast("⚠️ Quantidade inválida.",
           "warning"); return; }
         
         fetch("/estoque", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nomne, quandidade: qtd, unidade,
+          body: JSON.stringify({ nome, quantidade: qtd, unidade,
             categoria })
         })
-          .then(r => r.json())
-          .then(data => {
-            if (data.erro) { showToast("❌ " + data.erro, 
-            "error"); return; }
+          .then(async r => {
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.erro || "Não foi possível registrar o medicamento.");
             showToast("✅ " + data.mensagem, "sucess");
             document.getElementById("emNome").value = "";
             document.getElementById("emQtd").value = "10";
@@ -872,15 +876,14 @@
               nome: data.medicamento.nome,
               qtd,
               unidade: data.medicamento.unidade,
-              hora: new Date().toLocalTimeString("pt-BR",
+              hora: new Date().toLocaleTimeString("pt-BR",
                 { hour: "2-digit", minute: "2-digit" }),
-                responsável: usuario.nome || "Almoxerifado"
+              responsavel: usuario.nome || "Almoxerifado"
             });
             renderizarHistorico();
             carregarEstoque();
           })
-          .catch(() => showToast("❌ Erro ao registrar entrda.",
-            "error"));
+          .catch(error => showToast("❌ " + error.message, "error"));
       }
 
       //--------------------------
@@ -902,21 +905,20 @@
         const id = document.getElementById("selReporMed").value;
         const qtd = parseInt(document.getElementById("reporQtd").value);
 
-        if (!id) { showToast("⚠️ Selecione um medicamento.", "warning");}
-        if (!qtd || qtd <= 0) {
+        if (!id) { showToast("⚠️ Selecione um medicamento.", "warning"); return; }
+        if (!Number.isInteger(qtd) || qtd <= 0) {
           showToast("⚠️ Quantidade inválida.",
             "warning"); return;
         }
-
-        const med = estoqueGlobal.find(m => m.id == id);
 
         fetch(`/estoque/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json"},
           body: JSON.stringify({ quantidade: qtd })
         })
-          .then(r => r.json())
-          .then(data => {
+          .then(async r => {
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.erro || "Não foi possível repor o estoque.");
             showToast(`✅ +${qtd} ${data.medicamento.unidade}
             adicionados! Novo total: ${data.medicamento.quantidade}`,
              "sucess");
@@ -928,9 +930,9 @@
               nome: data.medicamento.nome,
               qtd,
               unidade: data.medicamento.unidade,
-              hora: new Date().totalLocaleTimeString("pt-BR"
+              hora: new Date().toLocaleTimeString("pt-BR",
               { hour: "2-digit", minute: "2-digit" }),
-              responsável: ususario.nome || "Almoxerifado" 
+              responsavel: usuario.nome || "Almoxerifado"
             });
             renderizarHistorico();
             carregarEstoque();
@@ -946,7 +948,7 @@
         document.getElementById("modalMedNome").textContent =
         `💊 ${nome} - Estoque atual: ${qtdAtual}`;
         document.getElementById("modalQtd").value = "10";
-        document.getElementById("modaleditar").class.List.add("open");
+        document.getElementById("modalEditar").classList.add("open");
       }
 
       function fecharModal() {
@@ -964,7 +966,13 @@
           headers: { "Content-Type": "application/json"},
           body: JSON.stringify({ quantidade: qtd})
          })
-         .catch(() => showToast("❌ Erro ao atualizar.", "error"));
+         .then(async r => {
+           const data = await r.json();
+           if (!r.ok) throw new Error(data.erro || "Não foi possível atualizar o estoque.");
+           fecharModal();
+           carregarEstoque();
+         })
+         .catch(error => showToast("❌ " + error.message, "error"));
       }
 
       // --------------------------
@@ -975,18 +983,19 @@
         do estoque?\nEsta ação não pode ser desfeita.`)) return;
 
         fetch(`/estoque/${id}`, {method: "DELETE" })
-          .then(r => r.json())
-          .then(() => {
+          .then(async r => {
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.erro || "Não foi possível remover o medicamento.");
             showToast(`🗑️ "${nome}" removido do estoque.`, "sucess");
             carregarEstoque();
           })
-          .catch(() => showToast("❌ Erro ao remover.", "error"));
+          .catch(error => showToast("❌ " + error.message, "error"));
       }
 
       // ---------------------------------
       // HISTÓRICO DE ENTRADAS (local)
       // ---------------------------------
-      function carregarHistorico() {
+      function renderizarHistorico() {
         const div = document.getElementById("historicoEntradas");
         if (historicoEntradas.length === 0) {
           div.innerHTML = `<div class="empty-state"><div
