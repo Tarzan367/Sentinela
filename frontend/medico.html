@@ -38,9 +38,10 @@
 <script>
 
 let triagensCarregadas = [];
+let triagemSelecionada = null;
 
 function carregar() {
-  fetch("/triagens")
+  return fetch("/triagens")
     .then(r => r.json())
     .then(data => {
       triagensCarregadas = data;
@@ -81,7 +82,12 @@ function carregar() {
 
 function selecionar(index) {
   const t = triagensCarregadas[index];
+  if (!t) {
+    alert("Não foi possível localizar esta triagem.");
+    return;
+  }
 
+  triagemSelecionada = t;
   document.getElementById("paciente").value = t.nome;
   document.getElementById("obs").value = t.observacao || "";
 
@@ -151,11 +157,12 @@ function carregarMedicacoes() {
 
 async function salvar() {
   const paciente = document.getElementById("paciente").value;
+  const triagem = triagemSelecionada;
   const diagnostico = document.getElementById("diagnostico").value;
   const medicamentoId = document.getElementById("medicacao").value;
   const obs = document.getElementById("obs").value;
 
-  if (!paciente) {
+  if (!paciente || !triagem) {
     alert("Selecione um paciente clicando em Atender.");
     return;
   }
@@ -173,6 +180,7 @@ async function salvar() {
       },
       body: JSON.stringify({
         paciente,
+        triagemId: triagem.id,
         diagnostico,
         medicamentoId,
         obs
@@ -195,8 +203,15 @@ async function salvar() {
       alert(`O medicamento ${dados.medicamento.nome} acabou. É necessário repor no almoxarifado.`);
     }
     document.getElementById("diagnostico").value = "";
+    document.getElementById("paciente").value = "";
     document.getElementById("medicacao").value = "";
     document.getElementById("obs").value = "";
+    triagemSelecionada = null;
+    try {
+      await carregar();
+    } catch (erroAtualizacao) {
+      alert(`Atendimento salvo, mas não foi possível atualizar a fila: ${erroAtualizacao.message}`);
+    }
     carregarMedicacoes().catch(erro =>
       alert(`Consulta salva, mas não foi possível atualizar a lista de medicamentos: ${erro.message}`)
     );
@@ -205,7 +220,7 @@ async function salvar() {
   }
 }
 
-carregar();
+carregar().catch(erro => alert(`Não foi possível carregar a fila de triagem: ${erro.message}`));
 carregarMedicacoes().catch(erro => alert(erro.message));
 
 </script>

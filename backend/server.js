@@ -261,9 +261,22 @@ app.delete("/estoque/:id", (req, res) => {
 // CONSULTA
 app.post("/consulta", (req, res) => {
   const db = readDB();
+  const body = req.body || {};
+  const triagens = Array.isArray(db.triagens) ? db.triagens : [];
+  if (body.triagemId === undefined || body.triagemId === null) {
+    return res.status(400).json({ erro: "Selecione uma triagem para atender o paciente" });
+  }
+
+  const triagemIndex = triagens.findIndex(item =>
+    String(item.id) === String(body.triagemId)
+  );
+  if (triagemIndex === -1) {
+    return res.status(404).json({ erro: "Esta triagem não está mais na fila de atendimento" });
+  }
+
   const estoque = Array.isArray(db.estoque) ? db.estoque : [];
   const medicamento = estoque.find(item =>
-    String(item.id) === String(req.body.medicamentoId)
+    String(item.id) === String(body.medicamentoId)
   );
 
   if (!medicamento || medicamento.quantidade <= 0) {
@@ -274,16 +287,18 @@ app.post("/consulta", (req, res) => {
 
   const consulta = {
     id: Date.now(),
-    paciente: req.body.paciente,
-    diagnostico: req.body.diagnostico,
+    paciente: triagens[triagemIndex].nome,
+    diagnostico: body.diagnostico,
     medicacao: medicamento.nome,
-    obs: req.body.obs,
+    obs: body.obs,
     createdAt: new Date()
   };
 
   medicamento.quantidade -= 1;
   db.estoque = estoque;
   db.consultas.push(consulta);
+  triagens.splice(triagemIndex, 1);
+  db.triagens = triagens;
   writeDB(db);
 
   res.json({
