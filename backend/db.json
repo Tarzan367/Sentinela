@@ -442,6 +442,14 @@
       "medicacao": "Buscopan",
       "obs": "passando muito mal com dor no peito",
       "createdAt": "2026-08-06T15:21:20.807Z"
+    },
+    {
+      "id": 1795704998411,
+      "paciente": "teste",
+      "diagnostico": "asdfghjklçqwertyuiopzxcvbnm,.",
+      "medicacao": "Omeprazol",
+      "obs": "tewwetewst",
+      "createdAt": "2026-11-26T14:56:38.411Z"
     }
   ],
   "tvChamadas": [
