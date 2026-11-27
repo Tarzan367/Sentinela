@@ -8,30 +8,35 @@
 
 <a class="login-back-button" href="index.html">← Voltar ao login</a>
 
-<div class="container">
+<div class="container medico-container">
 
   <div class="medico-cabecalho">
     <h2>🩺 Painel Médico</h2>
     <button type="button" onclick="window.open('tv.html', '_blank', 'noopener')">Ver TV</button>
   </div>
 
-  <div id="triagens" class="medico-pacientes"></div>
+  <div class="medico-layout">
+    <section class="medico-consulta" aria-labelledby="titulo-consulta">
+      <h3 id="titulo-consulta">Consulta</h3>
 
-  <hr>
+      <input id="paciente" placeholder="Paciente" readonly>
 
-  <h3>Consulta</h3>
+      <input id="diagnostico" placeholder="Diagnóstico">
 
-  <input id="paciente" placeholder="Paciente" readonly>
+      <select id="medicacao">
+        <option value="">Selecione a medicação</option>
+      </select>
 
-  <input id="diagnostico" placeholder="Diagnóstico">
+      <textarea id="obs" placeholder="Observações"></textarea>
 
-  <select id="medicacao">
-    <option value="">Selecione a medicação</option>
-  </select>
+      <button onclick="salvar()">Salvar</button>
+    </section>
 
-  <textarea id="obs" placeholder="Observações"></textarea>
-
-  <button onclick="salvar()">Salvar</button>
+    <aside class="medico-fila" aria-labelledby="titulo-pacientes">
+      <h3 id="titulo-pacientes">Pacientes para diagnóstico</h3>
+      <div id="triagens" class="medico-pacientes"></div>
+    </aside>
+  </div>
 
 </div>
 

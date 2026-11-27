@@ -141,6 +141,44 @@ button:focus-visible {
   width: auto;
 }
 
+.medico-container {
+  width: calc(100% - 40px);
+  max-width: none;
+  min-height: calc(100vh - 40px);
+  margin: 20px;
+}
+
+.medico-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.medico-consulta,
+.medico-fila {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #c9e6dc;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(232, 250, 255, 0.94));
+  box-shadow: 0 5px 14px rgba(24, 76, 91, 0.1);
+}
+
+.medico-consulta h3,
+.medico-fila h3 {
+  margin: 0 0 10px;
+}
+
+.medico-consulta textarea {
+  min-height: 220px;
+}
+
+.medico-fila {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
 .pacientes-fila {
   margin-bottom: 30px;
   padding: 16px;
@@ -396,6 +434,22 @@ hr {
   .medico-cabecalho button {
     width: 100%;
     margin-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .medico-container {
+    width: calc(100% - 24px);
+    min-height: auto;
+    margin: 12px;
+  }
+
+  .medico-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .medico-fila {
+    max-height: none;
   }
 }
 
