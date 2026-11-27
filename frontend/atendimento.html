@@ -30,7 +30,7 @@
 </div>
 
 <script>
-function cadastrar(){
+async function cadastrar(){
  const cpf = document.getElementById("cpf").value.trim();
  const cpfErro = document.getElementById("cpfErro");
 
@@ -41,15 +41,31 @@ function cadastrar(){
  }
 
  cpfErro.hidden = true;
- fetch("http://localhost:3000/atendimento",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body: JSON.stringify({
-    nome: document.getElementById("nome").value,
-    cpf,
-    tipo: document.getElementById("tipo").value
-  })
- });
+
+ let resposta;
+ try {
+  resposta = await fetch("http://localhost:3000/atendimento",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body: JSON.stringify({
+     nome: document.getElementById("nome").value,
+     cpf,
+     tipo: document.getElementById("tipo").value
+   })
+  });
+ } catch {
+  cpfErro.textContent = "Não foi possível enviar o cadastro. Tente novamente.";
+  cpfErro.hidden = false;
+  return;
+ }
+
+ const dados = await resposta.json();
+ if (!resposta.ok) {
+  cpfErro.textContent = dados.erro || "Não foi possível cadastrar o paciente.";
+  cpfErro.hidden = false;
+  return;
+ }
+
  alert("Paciente enviado para triagem");
 }
 </script>

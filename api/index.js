@@ -82,6 +82,10 @@ app.post("/login", (req, res) => {
 app.post("/atendimento", (req, res) => {
   const db = readDB();
 
+  if (db.pacientes.some(paciente => paciente.cpf === req.body.cpf)) {
+    return res.status(409).json({ erro: "esse cpf já foi cadastrado" });
+  }
+
   const paciente = {
     id: Date.now(),
     nome: req.body.nome,
