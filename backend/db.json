@@ -493,6 +493,14 @@
       "unidade": "cápsulas",
       "categoria": "Antialérgico",
       "createdAt": "2026-11-26T15:21:38.016Z"
+    },
+    {
+      "id": 1795778779579,
+      "nome": "Paracetamol",
+      "quantidade": 20,
+      "unidade": "cápsulas",
+      "categoria": "Antibiótico",
+      "createdAt": "2026-11-27T11:26:19.579Z"
     }
   ]
 }

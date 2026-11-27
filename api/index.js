@@ -71,7 +71,7 @@ app.post("/login", (req, res) => {
 
   if (!user) {
     return res.status(401).json({
-      erro: "Login inválido"
+      erro: "informações inválidas"
     });
   }
 
